@@ -40,5 +40,5 @@ export interface GenerationRequest {
   topic: string;
   gradeLevel: string;
   activity: string;
-  language: string;
+  languages: string[]; // Modifié pour supporter plusieurs langues
 }

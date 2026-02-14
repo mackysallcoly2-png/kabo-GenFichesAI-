@@ -1,8 +1,5 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { GenerationRequest, SheetType } from "../types";
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const cleanJsonString = (str: string): string => {
   const jsonMatch = str.match(/\{[\s\S]*\}/);
@@ -10,7 +7,12 @@ const cleanJsonString = (str: string): string => {
 };
 
 export const generatePedagogicalSheet = async (request: GenerationRequest & { type?: SheetType }) => {
-  const { activity, gradeLevel, topic, language, type = SheetType.LESSON } = request;
+  const { activity, gradeLevel, topic, languages, type = SheetType.LESSON } = request;
+
+  // Always use a new instance to ensure up-to-date API key from the environment.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+  const languagesStr = languages.join(', ');
 
   const systemInstruction = `Tu es l'Expert de référence du Ministère de l'Éducation Nationale du Sénégal. Tu maîtrises parfaitement le Guide Pédagogique du CEB pour TOUTES les classes (CI, CP, CE1, CE2, CM1, CM2) et TOUTES les disciplines.
 
@@ -23,14 +25,16 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
   6. FRANCO-ARABE : Tawhid, Fiqh, Sirah, Hadith, Coran (Hifz/Tajwid), Langue Arabe (Nahw, Sarf, Imla, Incha).
   7. ANGLAIS : Initiation à l'anglais oral et écrit.
 
-  TA MISSION :
+  TA MISSION MULTILINGUE :
+  - Si plusieurs langues sont demandées (${languagesStr}), tu dois produire une version BILINGUE ou TRILINGUE.
+  - Pour chaque champ (titre, objectifs, activités, synthèse), fournis les textes dans les langues sélectionnées séparés par un slash (ex: "Bonjour / Hello / السلام عليكم").
   - Décliner avec précision le DOMAINE, SOUS-DOMAINE, CB, PALIER et OA conformément au guide pour le niveau ${gradeLevel}.
   - Enrichir le vocabulaire pédagogique : utilise des termes comme "matérialisation", "confrontation", "validation", "institutionnalisation".
   - Résumé adapté : Pour un ${gradeLevel}, le résumé doit être calibré (CI/CP = 1 phrase simple ; CM = Synthèse structurée).
 
   STRUCTURE DE LA FICHE (MODÈLE APC OFFICIEL) :
   - Mise en train : Rappel de pré-requis ou jeu éducatif.
-  - Mise en situation : Situation-problème contextualisée au Sénégal (lieux, prénoms locaux).
+  - Mise en situation : Situation-problème contextualisée au Sénégal.
   - Construction des connaissances : Démarche active (Observation -> Hypothèses -> Vérification -> Synthèse).
   - Évaluation : Exercice d'application immédiate de l'OS.
 
@@ -41,9 +45,9 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
   Discipline/Activité : "${activity}"
   Titre de la leçon : "${topic}"
   Type : "${type}"
-  Langue de rédaction : "${language}"
+  Langues cibles : "${languagesStr}"
   
-  Assure-toi que tout le contenu (titres, activités, résumé) est rédigé en "${language}".`;
+  Rédige tout le contenu en respectant le format multilingue demandé : "${languagesStr}".`;
 
   try {
     const response = await ai.models.generateContent({
@@ -93,6 +97,7 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
       },
     });
 
+    // Directly access the .text property from the response object
     const text = response.text;
     if (!text) throw new Error("Réponse vide de l'IA.");
     
