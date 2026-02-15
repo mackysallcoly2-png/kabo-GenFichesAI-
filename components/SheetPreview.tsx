@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PedagogicalSheet } from '../types';
 
@@ -39,7 +38,7 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
       }} 
       dir={dir}
     >
-      {/* En-tête Institutionnel - Très compact pour préserver de l'espace */}
+      {/* En-tête Institutionnel */}
       <div className={`flex justify-between items-center border-b-2 border-black pb-1 mb-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
         <div className={`text-[7px] font-bold uppercase space-y-0.5 ${textAlign} w-1/3`}>
           <p>République du Sénégal</p>
@@ -60,7 +59,7 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
         </div>
       </div>
 
-      {/* Cadre Curriculaire - Gestion dynamique de l'espace */}
+      {/* Cadre Curriculaire */}
       <div className="mb-2 space-y-0.5">
         <div className={`grid grid-cols-2 border-2 border-black p-1.5 bg-slate-50 print:bg-white ${textAlign} text-[8.5px] gap-x-2`}>
           <div className="truncate"><span className="font-black">DOMAINE :</span> <span className="uppercase">{renderBilingualText(sheet.domain)}</span></div>
@@ -80,17 +79,6 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
             <span className="ml-1 italic">{renderBilingualText(sheet.competence)}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-[8px]">
-            <div className="bg-slate-50 print:bg-transparent p-1 border border-black/10 print:border-black">
-              <span className="font-black uppercase block border-b border-black/10 mb-0.5">Palier :</span>
-              <span className="line-clamp-1">{renderBilingualText(sheet.level)}</span>
-            </div>
-            <div className="bg-slate-50 print:bg-transparent p-1 border border-black/10 print:border-black">
-              <span className="font-black uppercase block border-b border-black/10 mb-0.5">OA :</span>
-              <span className="line-clamp-1">{renderBilingualText(sheet.oa)}</span>
-            </div>
-          </div>
-
           <div className="bg-slate-100 print:bg-slate-50 p-1.5 border-l-4 border-black">
             <span className="font-black uppercase text-[8.5px]">Objectif Spécifique (OS) :</span>
             <p className="font-bold text-[9px] leading-tight italic">{renderBilingualText(sheet.specificObjective)}</p>
@@ -98,14 +86,25 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
         </div>
       </div>
 
-      {/* Intrants - Unifiée en une ligne */}
+      {/* Intrants */}
       <div className={`grid grid-cols-4 gap-0 text-[8px] border-2 border-black border-t-0 mb-2 bg-white ${isArabic ? 'flex-row-reverse' : ''}`}>
         <div className="border-r-2 border-black p-1 text-center"><span className="block text-[6px] uppercase">Durée</span><span className="font-black">{sheet.duration}</span></div>
         <div className="border-r-2 border-black p-1 text-center col-span-2"><span className="block text-[6px] uppercase">Supports / Matériel</span><span className="truncate block italic">{renderBilingualText(sheet.material?.collective || 'Tableau, Craies')}</span></div>
         <div className="p-1 text-center"><span className="block text-[6px] uppercase">Référence</span><span className="truncate block font-bold">{renderBilingualText(sheet.reference || 'Guide CEB')}</span></div>
       </div>
 
-      {/* Tableau de Déroulement - Occupation Optimisée */}
+      {/* SECTION CRITIQUE : TRACE ÉCRITE / RÉSUMÉ */}
+      <div className={`mb-2 border-2 border-black p-2 bg-slate-50/50 print:bg-white ${textAlign}`}>
+        <div className="flex items-center mb-1 border-b border-black pb-0.5">
+          <i className="fas fa-edit text-[8px] mr-1 print:hidden"></i>
+          <span className="font-black uppercase text-[9px] tracking-widest">Trace Écrite / Résumé de la leçon</span>
+        </div>
+        <div className="text-[9.5px] leading-relaxed font-medium whitespace-pre-wrap italic">
+          {renderBilingualText(sheet.contentSummary)}
+        </div>
+      </div>
+
+      {/* Tableau de Déroulement */}
       <div className="flex-grow overflow-hidden flex flex-col">
         <table className="w-full border-collapse border-2 border-black table-fixed flex-grow">
           <thead>
@@ -116,13 +115,13 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
               <th className="p-1 w-[36.5%]">Élèves</th>
             </tr>
           </thead>
-          <tbody className="text-[8.5px] leading-[1.1] font-medium">
+          <tbody className="text-[8px] leading-[1.1] font-medium">
             {sheet.steps.slice(0, 5).map((step, idx) => (
               <tr key={idx} className="align-top border-b border-black">
-                <td className={`p-1 font-black uppercase text-[7.5px] bg-slate-50 print:bg-transparent border-r-2 border-black ${textAlign} break-words`}>
+                <td className={`p-1 font-black uppercase text-[7px] bg-slate-50 print:bg-transparent border-r-2 border-black ${textAlign} break-words`}>
                   {renderBilingualText(step.name)}
                 </td>
-                <td className={`p-1 text-[7.5px] italic border-r-2 border-black ${textAlign} break-words`}>
+                <td className={`p-1 text-[7px] italic border-r-2 border-black ${textAlign} break-words`}>
                   {renderBilingualText(step.objective)}
                 </td>
                 <td className={`p-1.5 border-r-2 border-black text-justify ${textAlign} break-words`}>
@@ -137,26 +136,25 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
         </table>
       </div>
 
-      {/* Observations - Pied de page */}
-      <div className="mt-1.5 border-2 border-black p-1.5 text-[7px] h-10 relative">
+      {/* Observations */}
+      <div className="mt-1.5 border-2 border-black p-1.5 text-[7px] h-8 relative">
         <span className="font-black uppercase bg-white px-1 absolute -top-1.5 left-2">Observations :</span>
-        <div className="mt-1 border-b border-black/10 w-full h-2"></div>
       </div>
 
-      {/* Signatures - Format compact */}
+      {/* Signatures */}
       <div className={`mt-2 grid grid-cols-2 gap-10 px-8 text-[8px] font-black uppercase text-center ${isArabic ? 'flex-row-reverse' : ''}`}>
-        <div className="space-y-4">
+        <div className="space-y-2">
           <p className="underline underline-offset-2">L'Enseignant</p>
           <div className="h-4"></div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-2">
           <p className="underline underline-offset-2">Direction / IEF</p>
           <div className="h-4"></div>
         </div>
       </div>
 
       <footer className="mt-auto pt-1 text-center text-[6px] text-slate-400 font-bold uppercase tracking-widest border-t border-slate-100">
-        Kabo FichesGen v2.5 • APC Sénégal • Document à usage unique
+        Kabo FichesGen v2.5 • APC Sénégal • Trace Écrite Incluse
       </footer>
     </div>
   );

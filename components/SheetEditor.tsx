@@ -145,23 +145,31 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
   };
 
   /**
-   * Export function updated to generate a .docx compatible file
-   * using MSO-specific headers and XML namespaces.
+   * Final DOCX Export with MSO compatibility headers and specific CSS
    */
   const exportToDocx = () => {
+    if (!sheet) return;
+    if (viewMode === 'edit') {
+      setViewMode('preview');
+      setTimeout(() => triggerDocx(), 1000);
+    } else {
+      triggerDocx();
+    }
+  };
+
+  const triggerDocx = () => {
     if (!previewRef.current || !sheet) return;
     
+    // Extract the rendered HTML
     const content = previewRef.current.innerHTML;
-    const orientation = 'portrait';
     
-    // Constructing a robust HTML wrapper for Word .docx compatibility
-    const header = `
+    // Build a specialized HTML wrapper for Word that supports MSO styles and RTL
+    const htmlHeader = `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' 
             xmlns:w='urn:schemas-microsoft-com:office:word' 
             xmlns='http://www.w3.org/TR/REC-html40'>
       <head>
         <meta charset='utf-8'>
-        <title>${sheet.title}</title>
         <!--[if gte mso 9]>
         <xml>
           <w:WordDocument>
@@ -175,32 +183,44 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
           @page {
             size: 21cm 29.7cm;
             margin: 1cm 1cm 1cm 1cm;
-            mso-page-orientation: ${orientation};
+            mso-header-margin: 35.4pt;
+            mso-footer-margin: 35.4pt;
           }
           body { 
-            font-family: Arial, sans-serif; 
-            font-size: 10pt; 
+            font-family: "Segoe UI", Arial, sans-serif; 
+            font-size: 9pt; 
             line-height: 1.2;
           }
           table { 
             border-collapse: collapse; 
             width: 100%; 
-            margin-bottom: 10pt;
-            border: 1pt solid black;
+            border: 1.5pt solid black;
+            mso-table-lspace: 0pt; 
+            mso-table-rspace: 0pt;
           }
           th, td { 
             border: 1pt solid black; 
-            padding: 5pt; 
+            padding: 4pt; 
             vertical-align: top;
           }
-          .font-serif { font-family: "Times New Roman", serif; }
           .font-black { font-weight: bold; }
           .uppercase { text-transform: uppercase; }
           .underline { text-decoration: underline; }
           .italic { font-style: italic; }
           .text-center { text-align: center; }
-          .bg-slate-50, .bg-slate-100 { background-color: #f8fafc; }
-          .text-indigo-600 { color: #4f46e5; }
+          .bg-slate-50 { background-color: #f1f5f9; }
+          .bg-slate-900 { background-color: #0f172a; color: #ffffff; }
+          h1 { font-size: 12pt; margin: 0; }
+          p { margin: 2pt 0; }
+          /* Reset container styles for Word */
+          .sheet-container { 
+            width: 100% !important; 
+            height: auto !important; 
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+          }
+          .no-print { display: none !important; }
         </style>
       </head>
       <body>
@@ -208,18 +228,17 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
       </body>
       </html>`;
 
-    // MIME type for DOCX
-    const mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    const blob = new Blob(['\ufeff', header], { type: mimeType });
+    // Use application/msword for broader version support without corruption warnings
+    const blob = new Blob(['\ufeff', htmlHeader], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     
+    // Use .doc extension for HTML-encapsulated Word files to ensure "Open anyway" stability
     link.href = url;
-    link.download = `Fiche_${sheet.gradeLevel}_${sheet.title.replace(/\s+/g, '_')}.docx`;
+    link.download = `Fiche_CEB_${sheet.gradeLevel}_${sheet.title.replace(/\s+/g, '_')}.doc`;
     link.click();
     
-    // Clean up
-    setTimeout(() => URL.revokeObjectURL(url), 100);
+    setTimeout(() => URL.revokeObjectURL(url), 200);
   };
 
   const containsArabic = (text: string) => /[\u0600-\u06FF]/.test(text || '');
@@ -395,22 +414,52 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
               <div className="bg-slate-200 rounded-[3rem] p-4 flex justify-center shadow-inner overflow-auto max-h-[900px]">
                 {viewMode === 'edit' ? (
                   <div className="bg-white p-10 w-full rounded-[2.5rem] shadow-xl space-y-8" dir={isArabic ? 'rtl' : 'ltr'}>
-                     <input 
-                        className="text-3xl font-black text-slate-900 w-full border-b-4 border-slate-100 outline-none focus:text-indigo-600 bg-transparent py-2"
-                        value={sheet.title}
-                        onChange={e => setSheet({...sheet, title: e.target.value})}
-                      />
+                     <div className="flex flex-col gap-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Titre de la leçon</label>
+                        <input 
+                          className="text-3xl font-black text-slate-900 w-full border-b-4 border-slate-100 outline-none focus:border-indigo-600 bg-transparent py-2 transition-all"
+                          value={sheet.title}
+                          onChange={e => setSheet({...sheet, title: e.target.value})}
+                        />
+                     </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <textarea className="p-6 bg-slate-50 rounded-[2rem] text-sm italic min-h-[120px] outline-none border-2 border-transparent focus:border-indigo-200" value={sheet.competence} onChange={e => setSheet({...sheet, competence: e.target.value})} />
-                        <textarea className="p-6 bg-indigo-50/30 rounded-[2rem] text-sm font-bold min-h-[120px] outline-none border-2 border-transparent focus:border-indigo-400" value={sheet.specificObjective} onChange={e => setSheet({...sheet, specificObjective: e.target.value})} />
+                        <div className="flex flex-col gap-2">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Compétence de base (CB)</label>
+                           <textarea className="p-6 bg-slate-50 rounded-[2rem] text-sm italic min-h-[120px] outline-none border-2 border-transparent focus:border-indigo-200" value={sheet.competence} onChange={e => setSheet({...sheet, competence: e.target.value})} />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Objectif Spécifique (OS)</label>
+                           <textarea className="p-6 bg-indigo-50/30 rounded-[2rem] text-sm font-bold min-h-[120px] outline-none border-2 border-transparent focus:border-indigo-400" value={sheet.specificObjective} onChange={e => setSheet({...sheet, specificObjective: e.target.value})} />
+                        </div>
                       </div>
+
+                      <div className="flex flex-col gap-2 bg-emerald-50/20 p-8 rounded-[2.5rem] border-2 border-dashed border-emerald-100">
+                         <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center">
+                            <i className="fas fa-pen-nib mr-2"></i> Trace Écrite (Résumé de la leçon)
+                         </label>
+                         <textarea 
+                           className="w-full p-6 bg-white rounded-2xl text-base font-medium min-h-[150px] outline-none border-2 border-transparent focus:border-emerald-500 shadow-sm"
+                           placeholder="Le résumé de la leçon que les élèves doivent copier..."
+                           value={sheet.contentSummary}
+                           onChange={e => setSheet({...sheet, contentSummary: e.target.value})}
+                         />
+                      </div>
+
                       <div className="space-y-6">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Déroulement de la leçon</label>
                         {sheet.steps.map((step, idx) => (
-                          <div key={idx} className="bg-white border-2 border-slate-100 p-6 rounded-[2rem]">
-                            <input className="font-black text-indigo-600 uppercase w-full mb-4 outline-none" value={step.name} onChange={e => { const s = [...sheet.steps]; s[idx].name = e.target.value; setSheet({...sheet, steps: s}); }} />
+                          <div key={idx} className="bg-white border-2 border-slate-100 p-6 rounded-[2rem] hover:border-indigo-100 transition-all">
+                            <input className="font-black text-indigo-600 uppercase w-full mb-4 outline-none text-sm" value={step.name} onChange={e => { const s = [...sheet.steps]; s[idx].name = e.target.value; setSheet({...sheet, steps: s}); }} />
                             <div className="grid grid-cols-2 gap-4">
-                              <textarea className="bg-slate-50 rounded-xl p-3 text-xs min-h-[100px] outline-none" value={step.teacherActivity} onChange={e => { const s = [...sheet.steps]; s[idx].teacherActivity = e.target.value; setSheet({...sheet, steps: s}); }} />
-                              <textarea className="bg-slate-50 rounded-xl p-3 text-xs min-h-[100px] outline-none" value={step.studentActivity} onChange={e => { const s = [...sheet.steps]; s[idx].studentActivity = e.target.value; setSheet({...sheet, steps: s}); }} />
+                              <div className="flex flex-col gap-1">
+                                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Maitre</label>
+                                 <textarea className="bg-slate-50 rounded-xl p-3 text-xs min-h-[100px] outline-none" value={step.teacherActivity} onChange={e => { const s = [...sheet.steps]; s[idx].teacherActivity = e.target.value; setSheet({...sheet, steps: s}); }} />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Élèves</label>
+                                 <textarea className="bg-slate-50 rounded-xl p-3 text-xs min-h-[100px] outline-none" value={step.studentActivity} onChange={e => { const s = [...sheet.steps]; s[idx].studentActivity = e.target.value; setSheet({...sheet, steps: s}); }} />
+                              </div>
                             </div>
                           </div>
                         ))}

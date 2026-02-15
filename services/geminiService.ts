@@ -9,45 +9,32 @@ const cleanJsonString = (str: string): string => {
 export const generatePedagogicalSheet = async (request: GenerationRequest & { type?: SheetType }) => {
   const { activity, gradeLevel, topic, languages, type = SheetType.LESSON } = request;
 
-  // Always use a new instance to ensure up-to-date API key from the environment.
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
   const languagesStr = languages.join(', ');
 
-  const systemInstruction = `Tu es l'Expert de référence du Ministère de l'Éducation Nationale du Sénégal. Tu maîtrises parfaitement le Guide Pédagogique du CEB pour TOUTES les classes (CI, CP, CE1, CE2, CM1, CM2) et TOUTES les disciplines.
-
-  CONTEXTE DE RÉFÉRENCE (CEB SÉNÉGAL) :
-  1. LANGUE ET COMMUNICATION (LC) : Communication Orale, Lecture, Écriture, Production d'écrits, Grammaire, Conjugaison, Orthographe, Vocabulaire.
-  2. MATHÉMATIQUES : Activités Numériques, Géométrie, Mesure, Résolution de problèmes.
-  3. ESVS : Histoire, Géographie, Initiation Scientifique et Technologique.
-  4. EDD (Éducation au Développement Durable) : Vivre Ensemble, Vivre dans son Milieu.
-  5. ARTS & SPORTS : Arts Plastiques, Éducation Musicale, EPS.
-  6. FRANCO-ARABE : Tawhid, Fiqh, Sirah, Hadith, Coran (Hifz/Tajwid), Langue Arabe (Nahw, Sarf, Imla, Incha).
-  7. ANGLAIS : Initiation à l'anglais oral et écrit.
-
-  TA MISSION MULTILINGUE :
-  - Si plusieurs langues sont demandées (${languagesStr}), tu dois produire une version BILINGUE ou TRILINGUE.
-  - Pour chaque champ (titre, objectifs, activités, synthèse), fournis les textes dans les langues sélectionnées séparés par un slash (ex: "Bonjour / Hello / السلام عليكم").
-  - Décliner avec précision le DOMAINE, SOUS-DOMAINE, CB, PALIER et OA conformément au guide pour le niveau ${gradeLevel}.
-  - Enrichir le vocabulaire pédagogique : utilise des termes comme "matérialisation", "confrontation", "validation", "institutionnalisation".
-  - Résumé adapté : Pour un ${gradeLevel}, le résumé doit être calibré (CI/CP = 1 phrase simple ; CM = Synthèse structurée).
-
-  STRUCTURE DE LA FICHE (MODÈLE APC OFFICIEL) :
-  - Mise en train : Rappel de pré-requis ou jeu éducatif.
-  - Mise en situation : Situation-problème contextualisée au Sénégal.
-  - Construction des connaissances : Démarche active (Observation -> Hypothèses -> Vérification -> Synthèse).
-  - Évaluation : Exercice d'application immédiate de l'OS.
-
-  RETOURNE EXCLUSIVEMENT DU JSON.`;
-
-  const prompt = `Génère une fiche de préparation complète pour :
-  Niveau : "${gradeLevel}"
-  Discipline/Activité : "${activity}"
-  Titre de la leçon : "${topic}"
-  Type : "${type}"
-  Langues cibles : "${languagesStr}"
+  const systemInstruction = `Tu es l'Expert de référence du Ministère de l'Éducation Nationale du Sénégal (CEB/APC).
   
-  Rédige tout le contenu en respectant le format multilingue demandé : "${languagesStr}".`;
+  TA MISSION : Générer une fiche pédagogique complète.
+  ÉLÉMENT CRITIQUE : Tu dois impérativement inclure une "TRACE ÉCRITE" (Résumé de la leçon).
+  - Pour CI/CP : 1 à 2 phrases très simples.
+  - Pour CE1/CE2 : Un court paragraphe structuré.
+  - Pour CM1/CM2 : Une synthèse complète avec des points clés (Je retiens).
+  
+  Format multilingue : "${languagesStr}". Sépare les langues par un slash (/) pour chaque champ.
+  
+  STRUCTURE APC :
+  - Domaine, Sous-domaine, Discipline, Activité, CB, Palier, OA.
+  - Objectif Spécifique (OS).
+  - Trace écrite (Résumé structuré).
+  - Étapes de la leçon (Mise en train, Situation, Construction, Évaluation).`;
+
+  const prompt = `Génère la fiche pédagogique (Type: ${type}) pour la leçon suivante :
+  Classe : ${gradeLevel}
+  Activité : ${activity}
+  Titre : ${topic}
+  Langues : ${languagesStr}
+  
+  Assure-toi que la "contentSummary" contient la trace écrite complète que les élèves devront copier.`;
 
   try {
     const response = await ai.models.generateContent({
@@ -67,7 +54,7 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
             competence: { type: Type.STRING },
             level: { type: Type.STRING },
             oa: { type: Type.STRING },
-            contentSummary: { type: Type.STRING },
+            contentSummary: { type: Type.STRING, description: "La trace écrite / résumé de la leçon" },
             specificObjective: { type: Type.STRING },
             duration: { type: Type.STRING },
             reference: { type: Type.STRING },
@@ -92,12 +79,11 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
               }
             }
           },
-          required: ["title", "domain", "subDomain", "competence", "level", "oa", "specificObjective", "duration", "steps"]
+          required: ["title", "domain", "subDomain", "competence", "contentSummary", "specificObjective", "steps"]
         },
       },
     });
 
-    // Directly access the .text property from the response object
     const text = response.text;
     if (!text) throw new Error("Réponse vide de l'IA.");
     
