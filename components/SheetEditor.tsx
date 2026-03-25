@@ -28,6 +28,7 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
   });
 
   const [sheet, setSheet] = useState<PedagogicalSheet | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -58,18 +59,19 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
 
   const handleGenerate = async () => {
     if (!formData.activity || !formData.topic) {
-      alert("Précisez l'activité et le titre pour interroger le guide.");
+      setErrorMessage("Précisez l'activité et le titre pour interroger le guide.");
       return;
     }
 
     setLoading(true);
+    setErrorMessage(null);
     try {
       const generated = await generatePedagogicalSheet(formData);
       setSheet({ ...generated, type: formData.type });
       setViewMode('preview');
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Erreur de connexion au guide pédagogique IA.");
+      setErrorMessage(error.message || "Erreur de connexion au guide pédagogique IA.");
     } finally {
       setLoading(false);
     }
@@ -138,7 +140,7 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
       }
     } catch (err) {
       console.error(err);
-      alert("Échec de l'export haute résolution. Utilisez l'impression système.");
+      setErrorMessage("Échec de l'export haute résolution. Utilisez l'impression système.");
     } finally {
       setPdfLoading(false);
     }
@@ -250,6 +252,16 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
         <div className="fixed top-20 right-4 z-[100] bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 animate-bounce">
           <i className="fas fa-check-circle text-xl"></i>
           <span className="font-bold">Fiche archivée !</span>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-rose-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <i className="fas fa-exclamation-circle text-xl"></i>
+          <span className="font-bold">{errorMessage}</span>
+          <button onClick={() => setErrorMessage(null)} className="ml-4 hover:opacity-70">
+            <i className="fas fa-times"></i>
+          </button>
         </div>
       )}
 

@@ -19,20 +19,58 @@ const getTypeColor = (type: SheetType) => {
 
 const Dashboard: React.FC<DashboardProps> = ({ sheets, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteTitle, setDeleteTitle] = useState('');
 
   const filteredSheets = sheets.filter(s => 
     s.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     s.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (id: string, title: string) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer la fiche "${title}" ?`)) {
-      onDelete(id);
+  const confirmDelete = (id: string, title: string) => {
+    setDeleteId(id);
+    setDeleteTitle(title);
+  };
+
+  const handleDelete = () => {
+    if (deleteId) {
+      onDelete(deleteId);
+      setDeleteId(null);
+      setDeleteTitle('');
     }
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Custom Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100">
+            <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+              <i className="fas fa-exclamation-triangle text-2xl"></i>
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 text-center mb-2">Supprimer la fiche ?</h3>
+            <p className="text-slate-500 text-center mb-8">
+              Êtes-vous sûr de vouloir supprimer <span className="font-bold text-slate-900">"{deleteTitle}"</span> ? Cette action est irréversible.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setDeleteId(null)}
+                className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={handleDelete}
+                className="flex-1 py-4 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-all shadow-lg shadow-rose-100"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header & Stats */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
         <div>
@@ -93,7 +131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ sheets, onDelete }) => {
                     <i className="fas fa-edit text-xs"></i>
                  </Link>
                  <button 
-                  onClick={() => handleDelete(sheet.id, sheet.title)}
+                  onClick={() => confirmDelete(sheet.id, sheet.title)}
                   className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-600 hover:text-white transition-colors"
                  >
                     <i className="fas fa-trash text-xs"></i>

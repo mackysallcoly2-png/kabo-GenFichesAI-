@@ -9,7 +9,7 @@ const cleanJsonString = (str: string): string => {
 export const generatePedagogicalSheet = async (request: GenerationRequest & { type?: SheetType }) => {
   const { activity, gradeLevel, topic, languages, type = SheetType.LESSON } = request;
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const languagesStr = languages.join(', ');
 
   const systemInstruction = `Tu es l'Expert de référence du Ministère de l'Éducation Nationale du Sénégal (CEB/APC).
@@ -38,7 +38,7 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: {
         systemInstruction,
