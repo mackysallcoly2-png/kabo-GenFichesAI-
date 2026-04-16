@@ -15,23 +15,23 @@ export interface PedagogicalStep {
 export interface PedagogicalSheet {
   id: string;
   title: string;
-  discipline?: string; // Discipline générale
-  subject: string; // Activité spécifique
-  domain: string; // Domaine
-  subDomain: string; // Sous-domaine
-  gradeLevel: string; // Classe (CI, CP, CE1, CE2, CM1, CM2)
-  competence: string; // Compétence de base (CB)
-  level: string; // Palier
-  oa: string; // Objectif d'Apprentissage (OA)
-  contentSummary: string; // Contenu
-  specificObjective: string; // Objectif spécifique (OS)
+  discipline?: string; 
+  subject: string; 
+  domain: string; 
+  subDomain: string; 
+  gradeLevel: string; 
+  cb: string; 
+  palier: string; 
+  oa: string; 
+  os: string; 
+  contenu: string; 
   type: SheetType;
   duration: string;
   material: {
     collective: string;
     individual: string;
   };
-  reference: string; // Bibliographie/Référence
+  reference: string; 
   steps: PedagogicalStep[];
   createdAt: number;
 }

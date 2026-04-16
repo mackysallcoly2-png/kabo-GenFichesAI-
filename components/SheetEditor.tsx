@@ -59,7 +59,7 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
 
   const handleGenerate = async () => {
     if (!formData.activity || !formData.topic) {
-      setErrorMessage("Précisez l'activité et le titre pour interroger le guide.");
+      setErrorMessage("Précisez l'activité et le titre pour une déclinaison précise.");
       return;
     }
 
@@ -244,7 +244,7 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
   };
 
   const containsArabic = (text: string) => /[\u0600-\u06FF]/.test(text || '');
-  const isArabic = sheet ? (containsArabic(sheet.title) || containsArabic(sheet.competence)) : false;
+  const isArabic = sheet ? (containsArabic(sheet.title) || containsArabic(sheet.cb)) : false;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -435,47 +435,55 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
                         />
                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="flex flex-col gap-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Compétence de base (CB)</label>
-                           <textarea className="p-6 bg-slate-50 rounded-[2rem] text-sm italic min-h-[120px] outline-none border-2 border-transparent focus:border-indigo-200" value={sheet.competence} onChange={e => setSheet({...sheet, competence: e.target.value})} />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Objectif Spécifique (OS)</label>
-                           <textarea className="p-6 bg-indigo-50/30 rounded-[2rem] text-sm font-bold min-h-[120px] outline-none border-2 border-transparent focus:border-indigo-400" value={sheet.specificObjective} onChange={e => setSheet({...sheet, specificObjective: e.target.value})} />
-                        </div>
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="flex flex-col gap-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CB (Compétence de Base)</label>
+                   <textarea className="p-6 bg-slate-50 rounded-[2rem] text-sm italic min-h-[100px] outline-none border-2 border-transparent focus:border-indigo-200" value={sheet.cb} onChange={e => setSheet({...sheet, cb: e.target.value})} />
+                </div>
+                <div className="flex flex-col gap-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Palier</label>
+                   <textarea className="p-6 bg-slate-50 rounded-[2rem] text-sm italic min-h-[100px] outline-none border-2 border-transparent focus:border-indigo-200" value={sheet.palier} onChange={e => setSheet({...sheet, palier: e.target.value})} />
+                </div>
+                <div className="flex flex-col gap-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">OA (Objectif d'Apprentissage)</label>
+                   <textarea className="p-6 bg-slate-50 rounded-[2rem] text-sm italic min-h-[100px] outline-none border-2 border-transparent focus:border-indigo-200" value={sheet.oa} onChange={e => setSheet({...sheet, oa: e.target.value})} />
+                </div>
+                <div className="flex flex-col gap-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">OS (Objectif Spécifique)</label>
+                   <textarea className="p-6 bg-indigo-50/30 rounded-[2rem] text-sm font-bold min-h-[100px] outline-none border-2 border-transparent focus:border-indigo-400" value={sheet.os} onChange={e => setSheet({...sheet, os: e.target.value})} />
+                </div>
+              </div>
 
-                      <div className="flex flex-col gap-2 bg-emerald-50/20 p-8 rounded-[2.5rem] border-2 border-dashed border-emerald-100">
-                         <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center">
-                            <i className="fas fa-pen-nib mr-2"></i> Trace Écrite (Résumé de la leçon)
-                         </label>
-                         <textarea 
-                           className="w-full p-6 bg-white rounded-2xl text-base font-medium min-h-[150px] outline-none border-2 border-transparent focus:border-emerald-500 shadow-sm"
-                           placeholder="Le résumé de la leçon que les élèves doivent copier..."
-                           value={sheet.contentSummary}
-                           onChange={e => setSheet({...sheet, contentSummary: e.target.value})}
-                         />
-                      </div>
+              <div className="flex flex-col gap-2 bg-emerald-50/20 p-8 rounded-[2.5rem] border-2 border-dashed border-emerald-100">
+                 <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center">
+                    <i className="fas fa-pen-nib mr-2"></i> {sheet.type === SheetType.EVALUATION ? "Situation d'Évaluation" : "Contenu (Trace Écrite)"}
+                 </label>
+                 <textarea 
+                   className="w-full p-6 bg-white rounded-2xl text-base font-medium min-h-[150px] outline-none border-2 border-transparent focus:border-emerald-500 shadow-sm"
+                   placeholder={sheet.type === SheetType.EVALUATION ? "La consigne ou le texte de base de l'évaluation..." : "Le résumé de la leçon que les élèves doivent copier..."}
+                   value={sheet.contenu}
+                   onChange={e => setSheet({...sheet, contenu: e.target.value})}
+                 />
+              </div>
 
-                      <div className="space-y-6">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Déroulement de la leçon</label>
-                        {sheet.steps.map((step, idx) => (
-                          <div key={idx} className="bg-white border-2 border-slate-100 p-6 rounded-[2rem] hover:border-indigo-100 transition-all">
-                            <input className="font-black text-indigo-600 uppercase w-full mb-4 outline-none text-sm" value={step.name} onChange={e => { const s = [...sheet.steps]; s[idx].name = e.target.value; setSheet({...sheet, steps: s}); }} />
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="flex flex-col gap-1">
-                                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Maitre</label>
-                                 <textarea className="bg-slate-50 rounded-xl p-3 text-xs min-h-[100px] outline-none" value={step.teacherActivity} onChange={e => { const s = [...sheet.steps]; s[idx].teacherActivity = e.target.value; setSheet({...sheet, steps: s}); }} />
-                              </div>
-                              <div className="flex flex-col gap-1">
-                                 <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Élèves</label>
-                                 <textarea className="bg-slate-50 rounded-xl p-3 text-xs min-h-[100px] outline-none" value={step.studentActivity} onChange={e => { const s = [...sheet.steps]; s[idx].studentActivity = e.target.value; setSheet({...sheet, steps: s}); }} />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+              <div className="space-y-6">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">{sheet.type === SheetType.EVALUATION ? "Items déclinés (sur 10 pts)" : "Déroulement de la leçon"}</label>
+                {sheet.steps.map((step, idx) => (
+                  <div key={idx} className="bg-white border-2 border-slate-100 p-6 rounded-[2rem] hover:border-indigo-100 transition-all">
+                    <input className="font-black text-indigo-600 uppercase w-full mb-4 outline-none text-sm" value={step.name} onChange={e => { const s = [...sheet.steps]; s[idx].name = e.target.value; setSheet({...sheet, steps: s}); }} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1">
+                         <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Activités Maitre</label>
+                         <textarea className="bg-slate-50 rounded-xl p-3 text-xs min-h-[100px] outline-none" value={step.teacherActivity} onChange={e => { const s = [...sheet.steps]; s[idx].teacherActivity = e.target.value; setSheet({...sheet, steps: s}); }} />
                       </div>
+                      <div className="flex flex-col gap-1">
+                         <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">Activités Élèves</label>
+                         <textarea className="bg-slate-50 rounded-xl p-3 text-xs min-h-[100px] outline-none" value={step.studentActivity} onChange={e => { const s = [...sheet.steps]; s[idx].studentActivity = e.target.value; setSheet({...sheet, steps: s}); }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
                   </div>
                 ) : (
                   <div ref={previewRef} className="print:m-0">

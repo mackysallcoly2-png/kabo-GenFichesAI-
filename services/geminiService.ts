@@ -14,27 +14,44 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
 
   const systemInstruction = `Tu es l'Expert de référence du Ministère de l'Éducation Nationale du Sénégal (CEB/APC).
   
-  TA MISSION : Générer une fiche pédagogique complète.
-  ÉLÉMENT CRITIQUE : Tu dois impérativement inclure une "TRACE ÉCRITE" (Résumé de la leçon).
-  - Pour CI/CP : 1 à 2 phrases très simples.
-  - Pour CE1/CE2 : Un court paragraphe structuré.
-  - Pour CM1/CM2 : Une synthèse complète avec des points clés (Je retiens).
+  TA MISSION : Générer une fiche pédagogique ou d'évaluation complète.
+  
+  CRITIQUE : Toute l'information doit être extraite CONFORMÉMENT AUX GUIDES PÉDAGOGIQUES officiels du Sénégal.
+  Tu dois utiliser les libellés EXACTS (CB, Palier, OA, OS, Contenu) tels que formulés dans les guides officiels.
+  
+  POUR LES LEÇONS (Type: LESSON) :
+  - 'contenu' : La trace écrite structurée (Le résumé que l'élève retient).
+  - Étapes : Mise en train, Révision, Situation, Construction, Évaluation.
+  
+  POUR LES ÉVALUATIONS (Type: EVALUATION) :
+  - 'contenu' : La "SITUATION D'ÉVALUATION" (contexte et CONSIGNE UNIQUE).
+  - Les 'steps' doivent correspondre à 5 ITEMS progressifs basés sur cette consigne.
+  - Le Total du barème doit être de 10 POINTS.
   
   Format multilingue : "${languagesStr}". Sépare les langues par un slash (/) pour chaque champ.
   
-  STRUCTURE APC :
-  - Domaine, Sous-domaine, Discipline, Activité, CB, Palier, OA.
-  - Objectif Spécifique (OS).
-  - Trace écrite (Résumé structuré).
-  - Étapes de la leçon (Mise en train, Situation, Construction, Évaluation).`;
+  DÉCLINAISON APC SÉNÉGAL (LIBELLÉS OBLIGATOIRES) :
+  - cb : Compétence de Base (texte exact du guide)
+  - palier : Palier tel que défini dans le guide
+  - oa : Objectif d'Apprentissage
+  - os : Objectif Spécifique
+  - contenu : Contenu de la leçon / Trace écrite`;
 
-  const prompt = `Génère la fiche pédagogique (Type: ${type}) pour la leçon suivante :
-  Classe : ${gradeLevel}
-  Activité : ${activity}
-  Titre : ${topic}
-  Langues : ${languagesStr}
-  
-  Assure-toi que la "contentSummary" contient la trace écrite complète que les élèves devront copier.`;
+  const prompt = type === SheetType.EVALUATION 
+    ? `Génère une FICHE D'ÉVALUATION (Format APC Sénégal) pour :
+       Classe : ${gradeLevel}
+       Activité : ${activity}
+       Titre : ${topic}
+       Langues : ${languagesStr}
+       
+       Utilise les libellés officiels du guide. 5 items sur 10 points.`
+    : `Génère la fiche pédagogique (Type: LESSON) pour :
+       Classe : ${gradeLevel}
+       Activité : ${activity}
+       Titre : ${topic}
+       Langues : ${languagesStr}
+       
+       Récupère précisément la CB, le Palier, l'OA, l'OS et le Contenu (Trace Écrite) tels qu'ils figurent dans le guide officiel.`;
 
   try {
     const response = await ai.models.generateContent({
@@ -51,11 +68,11 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
             subDomain: { type: Type.STRING },
             discipline: { type: Type.STRING },
             activity: { type: Type.STRING },
-            competence: { type: Type.STRING },
-            level: { type: Type.STRING },
-            oa: { type: Type.STRING },
-            contentSummary: { type: Type.STRING, description: "La trace écrite / résumé de la leçon" },
-            specificObjective: { type: Type.STRING },
+            cb: { type: Type.STRING, description: "Compétence de base exacte du guide" },
+            palier: { type: Type.STRING, description: "Palier exact du guide" },
+            oa: { type: Type.STRING, description: "Objectif d'apprentissage" },
+            os: { type: Type.STRING, description: "Objectif spécifique" },
+            contenu: { type: Type.STRING, description: "Trace écrite / Résumé de la leçon" },
             duration: { type: Type.STRING },
             reference: { type: Type.STRING },
             material: {
@@ -79,7 +96,7 @@ export const generatePedagogicalSheet = async (request: GenerationRequest & { ty
               }
             }
           },
-          required: ["title", "domain", "subDomain", "competence", "contentSummary", "specificObjective", "steps"]
+          required: ["title", "domain", "subDomain", "cb", "palier", "oa", "os", "contenu", "steps"]
         },
       },
     });
