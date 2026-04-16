@@ -31,13 +31,14 @@
             
             .sheet-container { 
                 margin: 0 !important;
-                padding: 0 !important;
+                padding: 10mm !important; /* Standard printable margins */
                 width: 210mm !important;
                 height: 297mm !important;
                 box-shadow: none !important;
                 border: none !important;
-                page-break-after: avoid;
-                page-break-before: avoid;
+                page-break-after: always;
+                page-break-inside: avoid;
+                display: block !important;
             }
         }
         /* Custom scrollbar for better UX */
