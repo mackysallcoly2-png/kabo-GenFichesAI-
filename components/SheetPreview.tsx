@@ -28,14 +28,15 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
 
   return (
     <div 
-      className="sheet-container bg-white text-slate-900 flex flex-col mx-auto shadow-2xl print:shadow-none" 
+      className="sheet-container bg-white text-slate-900 flex flex-col mx-auto print:shadow-none" 
       style={{ 
         width: '210mm', 
         height: '297mm', 
         padding: '10mm',
         fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
         overflow: 'hidden',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' /* Manual shadow-2xl to avoid oklab colors */
       }} 
       dir={dir}
     >
@@ -62,7 +63,10 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
 
       {/* Cadre Curriculaire - Recipe 1 Inspired Grid */}
       <div className="mb-3 space-y-1">
-        <div className={`grid grid-cols-2 border-[1.5pt] border-slate-950 p-2 bg-slate-50/50 print:bg-transparent ${textAlign} text-[9px] gap-x-4 gap-y-1`}>
+        <div 
+          className={`grid grid-cols-2 border-[1.5pt] border-slate-950 p-2 print:bg-transparent ${textAlign} text-[9px] gap-x-4 gap-y-1`}
+          style={{ backgroundColor: '#f9fafb' }} /* Approx bg-slate-50/50 */
+        >
           <div className="flex items-baseline gap-2"><span className="font-black text-[8px] opacity-70">DOMAINE :</span> <span className="uppercase font-bold">{renderBilingualText(sheet.domain)}</span></div>
           <div className="flex items-baseline gap-2"><span className="font-black text-[8px] opacity-70">S-DOMAINE :</span> <span className="uppercase font-bold">{renderBilingualText(sheet.subDomain)}</span></div>
           <div className="flex items-baseline gap-2"><span className="font-black text-[8px] opacity-70">DISCIPLINE :</span> <span className="uppercase font-bold">{renderBilingualText(sheet.discipline || '/')}</span></div>
@@ -91,7 +95,10 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
             <span className="ml-1 italic font-medium">{renderBilingualText(sheet.oa)}</span>
           </div>
 
-          <div className="bg-slate-100/50 print:bg-slate-50 p-2 border-l-4 border-indigo-600 print:border-slate-950">
+          <div 
+            className="print:bg-slate-50 p-2 border-l-4 border-indigo-600 print:border-slate-950"
+            style={{ backgroundColor: '#f9fafb' }} /* Approx bg-slate-100/50 */
+          >
             <span className="font-black uppercase text-[8.5px]">Objectif Spécifique (OS) :</span>
             <p className="font-bold text-[9px] leading-tight italic text-slate-800">{renderBilingualText(sheet.os)}</p>
           </div>
@@ -106,7 +113,10 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
       </div>
 
       {/* SECTION CRITIQUE : TRACE ÉCRITE / RÉSUMÉ */}
-      <div className={`mb-3 border-[1.5pt] border-slate-950 p-3 bg-indigo-50/20 print:bg-transparent ${textAlign} relative overflow-hidden`}>
+      <div 
+        className={`mb-3 border-[1.5pt] border-slate-950 p-3 print:bg-transparent ${textAlign} relative overflow-hidden`}
+        style={{ backgroundColor: '#fafbff' }} /* Approx bg-indigo-50/20 */
+      >
         <div className="flex items-center mb-1.5 border-b border-slate-300 pb-1">
           <i className="fas fa-feather-pointed text-[9px] mr-2 text-indigo-500 print:hidden"></i>
           <span className="font-black uppercase text-[10px] tracking-widest text-indigo-900 print:text-black">
@@ -159,7 +169,10 @@ export const SheetPreview: React.FC<SheetPreviewProps> = ({ sheet }) => {
       </div>
 
       {/* Observations */}
-      <div className="mt-3 border-[1.5pt] border-slate-950 p-2 text-[7.5px] h-10 relative bg-slate-50/30 print:bg-transparent">
+      <div 
+        className="mt-3 border-[1.5pt] border-slate-950 p-2 text-[7.5px] h-10 relative print:bg-transparent"
+        style={{ backgroundColor: '#f9fafb' }} /* Approx bg-slate-50/30 */
+      >
         <span className="font-black uppercase bg-white print:bg-white px-1.5 absolute -top-2 left-3 border border-slate-950">Observations :</span>
       </div>
 

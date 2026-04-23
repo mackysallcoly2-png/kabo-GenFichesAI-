@@ -450,11 +450,19 @@ const SheetEditor: React.FC<SheetEditorProps> = ({ sheets = [], onSave }) => {
                 </div>
                 <div className="flex flex-col gap-2">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">OS (Objectif Spécifique)</label>
-                   <textarea className="p-6 bg-indigo-50/30 rounded-[2rem] text-sm font-bold min-h-[100px] outline-none border-2 border-transparent focus:border-indigo-400" value={sheet.os} onChange={e => setSheet({...sheet, os: e.target.value})} />
+                   <textarea 
+                     className="p-6 rounded-[2rem] text-sm font-bold min-h-[100px] outline-none border-2 border-transparent focus:border-indigo-400" 
+                     style={{ backgroundColor: '#f5f7ff' }} /* Approx bg-indigo-50/30 */
+                     value={sheet.os} 
+                     onChange={e => setSheet({...sheet, os: e.target.value})} 
+                   />
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 bg-emerald-50/20 p-8 rounded-[2.5rem] border-2 border-dashed border-emerald-100">
+              <div 
+                className="flex flex-col gap-2 p-8 rounded-[2.5rem] border-2 border-dashed border-emerald-100"
+                style={{ backgroundColor: '#fafffd' }} /* Approx bg-emerald-50/20 */
+              >
                  <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center">
                     <i className="fas fa-pen-nib mr-2"></i> {sheet.type === SheetType.EVALUATION ? "Situation d'Évaluation" : "Contenu (Trace Écrite)"}
                  </label>
